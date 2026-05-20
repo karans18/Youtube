@@ -9,39 +9,39 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      reuired: true,
+      required: true,
       unique: true,
-    },
-    password: {
-      type: String,
-      reuired: true,
     },
     phone: {
       type: String,
-      reuired: true,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
     },
     logoUrl: {
       type: String,
-      reuired: true,
+      required: true,
     },
     logoId: {
       type: String,
-      reuired: true,
+      required: true,
     },
-    subscriber: {
+    subscribers: {
       type: Number,
       default: 0,
     },
-    subscriberedChannels: [
+    subscribedChannels: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
     ],
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true },
 );
+
 const userModel = mongoose.model("User", userSchema);
+
 export default userModel;
