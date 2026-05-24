@@ -8,6 +8,7 @@ import bodyParser from "body-parser";
 import ConnectDB from "./config/db.js";
 import userRoutes from "./routes/user.routes.js";
 import videoRoutes from "./routes/video.routes.js";
+import commentRoutes from "./routes/comment.routes.js";
 
 const app = express();
 ConnectDB();
@@ -22,6 +23,7 @@ app.use(
 );
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/video", videoRoutes);
+app.use("/api/v1/comment", commentRoutes);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`),
