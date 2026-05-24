@@ -90,3 +90,172 @@ export const updateVideo = async (req, res) => {
 
   const existingVideo = await Video.findById(videoId);
 };
+
+/**
+ * Delete Video
+ */
+export const deleteVideo = async (req, res) => {
+  try {
+    const videoId = req.params.id;
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+      return res.status(404).json({ error: "Videos Not Found" });
+    }
+
+    if (video.user_id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "unauthorized" });
+    }
+
+    await cloudinary.uploader.destroy(video.videoId);
+    await cloudinary.uploader.destroy(video.thumbnailId);
+    await Video.findByIdAndDelete(videoId);
+    res.status(200).json({ message: "video Deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "something went wrong", message: error.message });
+  }
+};
+
+/*
+ *Get all videos
+ */
+
+export const getAllVideos = async (req, res) => {
+  try {
+    const videos = await Video.find().sort({ createdAt: -1 });
+    res.status(200).json(videos);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "something went wrong", message: error.message });
+  }
+};
+/*
+ *Get My videos
+ */
+
+export const getMyVideos = async (req, res) => {
+  try {
+    const videos = await Video.find({ user_id: req.user._id }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json(videos);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "something went wrong", message: error.message });
+  }
+};
+
+export const getVideoById = async (req, res) => {
+  try {
+    const videoId = req.params.id;
+
+    const userId = req.user._id;
+
+    // Add user to viewedBy array without duplicates
+    const video = await Video.findByIdAndUpdate(
+      videoId,
+      {
+        $addToSet: {
+          viewedBy: userId,
+        },
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (!video) {
+      return res.status(404).json({
+        error: "Video not found",
+      });
+    }
+
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Fetch Error:", error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
+/*
+ *Get video by category
+ */
+
+export const getVideoByCategory = async (req, res) => {
+  try {
+    const videos = (await Video.find({ category: req.params.category })).sort({
+      createdAt: -1,
+    });
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Fetch Error:", error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
+/**
+ *
+ *Get video By tag
+ */
+export const tag = async (req, res) => {
+  try {
+    const tag = req.params.id;
+    const videos = await (
+      await Video.find({ tag: tag })
+    ).sort({ createdAt: -1 });
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Fetch Error:", error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
+
+/**
+ * Post a Like
+ */
+export const like = async (req, res) => {
+  try {
+    const { videoId } = req.body;
+    const videos = await Video.findByIdAndUpdate(videoId, {
+      $addToSet: { likedBy: req.user._id },
+      $pull: { disLikedBy: req.user._id },
+    });
+
+    res.status(200).json({ message: "liked the Video" });
+  } catch (error) {
+    console.error("Fetch Error:", error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
+
+export const disLike = async (req, res) => {
+  try {
+    const { videoId } = req.body;
+    const videos = await Video.findByIdAndUpdate(videoId, {
+      $addToSet: { disLikedBy: req.user._id },
+      $pull: { likedBy: req.user._id },
+    });
+
+    res.status(200).json({ message: "Disliked the Video" });
+  } catch (error) {
+    console.error("Fetch Error:", error);
+
+    res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+};
